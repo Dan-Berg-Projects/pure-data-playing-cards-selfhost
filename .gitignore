@@ -1,0 +1,12 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+
+# Never commit backer exports or any personal data
+*.csv
+*.xlsx
+
+# Node (only relevant inside vision-ocr-fn/ if you build locally)
+node_modules/
+npm-debug.log*

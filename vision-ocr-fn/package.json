@@ -1,0 +1,12 @@
+{
+  "name": "vision-ocr-fn",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "license": "MIT",
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "@google-cloud/vision": "^4.3.3",
+    "busboy": "^1.6.0"
+  }
+}

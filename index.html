@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Pure Data Playing Cards — Renderer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./style.css" />
+    <!-- If loaded inside an iframe, size to content (not 100vh) so the host
+         page can auto-resize without a feedback loop. -->
+    <script>
+      if (window.self !== window.top)
+        document.documentElement.classList.add("embedded");
+    </script>
+  </head>
+  <body>
+    <div class="app" id="appRoot">
+      <!-- Header -->
+      <header class="masthead">
+        <div class="brandline">
+          <span class="b-brace">{</span>
+          <span class="b-key">"deck"</span><span class="b-punc">:</span>
+          <span class="b-val">"pure_data_playing_cards"</span>
+          <span class="b-brace">}</span>
+        </div>
+        <p class="tagline">
+          Scan a card to render it.
+          <a class="pack-link" href="https://danberg.art/products/pure-data-playing-cards" target="_blank" rel="noopener">get your pack ↗</a>
+        </p>
+      </header>
+
+      <!-- Console + rendered card: side by side on desktop, stacked on mobile -->
+      <div class="work">
+      <!-- Terminal console -->
+      <main class="console">
+        <div class="titlebar">
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          <span class="titlepath">renderer</span>
+        </div>
+
+        <div class="console-body">
+          <!-- Scan: the hero action -->
+          <button id="scanBtn" class="scan-hero" type="button">
+            <span class="scan-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 8V5a2 2 0 0 1 2-2h3" />
+                <path d="M16 3h3a2 2 0 0 1 2 2v3" />
+                <path d="M21 16v3a2 2 0 0 1-2 2h-3" />
+                <path d="M8 21H5a2 2 0 0 1-2-2v-3" />
+                <circle cx="12" cy="12" r="3.2" />
+              </svg>
+            </span>
+            <span class="scan-text">
+              <span class="scan-label">Scan Card Code</span>
+              <span class="scan-sub">point your camera at a card</span>
+            </span>
+            <span class="scan-go" aria-hidden="true">→</span>
+          </button>
+
+          <!-- Examples: secondary -->
+          <button id="examplesBtn" class="examples-btn" type="button">
+            <span class="ex-icon" aria-hidden="true">↻</span> load an example
+          </button>
+
+          <!-- Editor: manual / advanced input -->
+          <div class="editor-block">
+            <div class="editor-label">
+              <span class="el-prompt">›</span> manual input <span class="el-tag">advanced</span>
+            </div>
+            <textarea
+              id="cardInput"
+              class="editor"
+              spellcheck="false"
+              placeholder='{ "rank": "8", "suit": "clubs", "type": "number" }'
+            ></textarea>
+          </div>
+
+          <!-- Render + (Plinko toggle is injected here by JS) -->
+          <div class="row render-row" id="renderRow">
+            <button id="renderBtn" class="btn primary render-btn" type="button">Render Card</button>
+          </div>
+        </div>
+      </main>
+
+      <!-- Payoff: the rendered card -->
+      <section class="stage-wrap">
+        <!-- Plinko score display (shown when Plinko is on) -->
+        <div class="row scores-row" id="plinkoScores" hidden>
+          <div class="score-chip">
+            <span class="score-label">SCORE</span>
+            <span id="plinkoScoreVal">0</span>
+          </div>
+          <div class="score-chip">
+            <span class="score-label">BALLS</span>
+            <span id="plinkoBallsVal">5</span>
+          </div>
+          <div class="score-chip">
+            <span class="score-label">HIGH</span>
+            <span id="plinkoHighVal">0</span>
+          </div>
+        </div>
+
+        <!-- Canvas + placeholder -->
+        <div class="card-stage">
+          <div class="card-empty" aria-hidden="true">
+            <div class="ce-brace">{&#8202;}</div>
+            <div class="ce-line">awaiting card</div>
+            <div class="ce-sub">scan or type, then render<span class="ce-cursor"></span></div>
+          </div>
+          <canvas
+            id="cardCanvas"
+            width="360"
+            height="528"
+            aria-label="card canvas"
+          ></canvas>
+        </div>
+
+        <!-- Drop ball row (shown when Plinko is on) -->
+        <div class="row drop-row" id="plinkoDropRow" hidden></div>
+      </section>
+      </div>
+
+      <!-- Footer: report-a-bug + subtle build tag -->
+      <div class="appfoot">
+        <button type="button" id="bugBtn" class="bug-link">Report a bug</button>
+        <button type="button" id="creditsBtn" class="bug-link">Credits</button>
+        <div class="buildtag" id="buildTag"></div>
+      </div>
+    </div>
+
+    <!-- Camera overlay is created dynamically by JS -->
+
+    <!-- Render the card at the device's pixel ratio so it stays crisp on
+         Retina / high-DPI screens. Must run BEFORE app.js reads the size. -->
+    <script>
+      (function () {
+        var c = document.getElementById("cardCanvas");
+        if (c) {
+          var dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 3));
+          c.width = Math.round(360 * dpr);
+          c.height = Math.round(528 * dpr);
+        }
+      })();
+    </script>
+    <script src="./app.js"></script>
+
+    <!-- Manual-input box is collapsed by default; the green arrow expands it.
+         Loading an example also expands it so the JSON is visible. -->
+    <script>
+      (function () {
+        var block = document.querySelector(".editor-block");
+        var label = block && block.querySelector(".editor-label");
+        if (!block || !label) return;
+        label.setAttribute("role", "button");
+        label.setAttribute("tabindex", "0");
+        label.setAttribute("aria-expanded", "false");
+        // On desktop there's room, so start expanded.
+        if (window.matchMedia && window.matchMedia("(min-width: 880px)").matches) {
+          block.classList.add("open");
+          label.setAttribute("aria-expanded", "true");
+        }
+        function toggle() {
+          var open = block.classList.toggle("open");
+          label.setAttribute("aria-expanded", open ? "true" : "false");
+        }
+        label.addEventListener("click", toggle);
+        label.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            toggle();
+          }
+        });
+        // Loading an example expands the box so people see what the button did.
+        var ex = document.getElementById("examplesBtn");
+        if (ex)
+          ex.addEventListener("click", function () {
+            block.classList.add("open");
+            label.setAttribute("aria-expanded", "true");
+          });
+      })();
+    </script>
+
+    <!-- Auto-resize the Shopify iframe. Message type matches the parent
+         wrapper (purecode:height). Harmless if not embedded. -->
+    <script>
+      const postSize = () => {
+        const h = document.documentElement.scrollHeight;
+        parent?.postMessage?.({ type: "purecode:height", height: h }, "*");
+      };
+      new ResizeObserver(postSize).observe(document.documentElement);
+      window.addEventListener("load", postSize);
+      window.addEventListener("message", (e) => {
+        if (e.data?.type === "purecode:parent-ready") postSize();
+      });
+    </script>
+  </body>
+</html>
